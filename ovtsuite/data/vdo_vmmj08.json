@@ -1,0 +1,12 @@
+{
+ "format": "ovt-vdo-definition",
+ "version": 1,
+ "family": "VMMJ08",
+ "inherits": "VWK503",
+ "title": "VDO instrument cluster, VMMJ08 ROM (VW Mk4 late)",
+ "status": "verified",
+ "rom_versions": [
+  "VMMJ08MH 09.00"
+ ],
+ "notes": "KWHack's VMMJ08 profile is address-for-address identical to VWK503 (confirmed against a real VMMJ08 sample: checksum at 0x190 valid, immobilizer ID at 0xE0)."
+}

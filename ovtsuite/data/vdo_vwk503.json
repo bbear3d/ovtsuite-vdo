@@ -1,0 +1,684 @@
+{
+ "format": "ovt-vdo-definition",
+ "version": 1,
+ "family": "VWK503",
+ "title": "VDO instrument cluster, VWK503 ROM (VW Mk4 / B5 era)",
+ "layout": "VWK503",
+ "eeprom_size": 2048,
+ "status": "verified",
+ "rom_versions": [
+  "VWK503LL 09.00",
+  "VWK503MH 09.00"
+ ],
+ "identity_fields": {
+  "immo_id": "0xE0"
+ },
+ "vehicle_family_address": "0x223",
+ "checksums": [
+  {
+   "name": "Gauge / K-value checksum",
+   "address": "0x190",
+   "sum_to": "0xFF",
+   "regions": [
+    [
+     "0x191",
+     8
+    ],
+    [
+     "0x258",
+     32
+    ]
+   ],
+   "description": "Checksum byte + region 1 (K-value) + region 2 (speedometer map) must sum to 0xFF (mod 256), or the cluster shows 'dEF'."
+  }
+ ],
+ "patch_module": {
+  "address": "0x4F6",
+  "end": "0x7E0",
+  "description": "CDC16xxF-E memory-patch block: 6-byte header (H0 checksum, H1 data length, H2/H3 code length, H4/H5 target ROM version) then 6502 code and the patch table. Bound to one exact ROM build."
+ },
+ "parameters": [
+  {
+   "name": "K-value (distance impulse number)",
+   "group": "gauges",
+   "heading": "Speed & distance",
+   "kind": "value",
+   "bits": 16,
+   "units": "impulses/km",
+   "editable": true,
+   "checksummed": true,
+   "description": "Impulses per km the cluster counts for speed and distance. Only used when coding digit 5 (distance impulse number) is not overriding it. Wheel revolutions per km x gearbox sender pulses per revolution (7 on Golf/Jetta, 8 on most others). Covered by the gauge checksum, corrected on save.",
+   "address": "0x192",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Speedometer calibration",
+   "group": "gauges",
+   "heading": "Speed & distance",
+   "kind": "table",
+   "bits": 16,
+   "rows": 2,
+   "cols": 8,
+   "row_labels": [
+    "Speed point",
+    "Needle position"
+   ],
+   "editable": true,
+   "checksummed": true,
+   "description": "Speedometer needle map: row 1 is the speed value at each calibration point, row 2 the stepper-motor needle position for it. To correct a speedometer that reads N% high, divide the needle positions by (1 + N/100). Covered by the gauge checksum, corrected on save.",
+   "address": "0x258",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Tachometer calibration",
+   "group": "gauges",
+   "heading": "Gauges",
+   "kind": "table",
+   "bits": 16,
+   "rows": 2,
+   "cols": 4,
+   "row_labels": [
+    "RPM point",
+    "Needle position"
+   ],
+   "editable": true,
+   "description": "Tachometer needle map: value at each calibration point and the stepper position for it. Differs by gauge face (diesel vs petrol tach).",
+   "address": "0x278",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Fuel gauge calibration",
+   "group": "gauges",
+   "heading": "Gauges",
+   "kind": "table",
+   "bits": 16,
+   "rows": 2,
+   "cols": 8,
+   "row_labels": [
+    "Fuel point",
+    "Needle position"
+   ],
+   "editable": true,
+   "description": "Fuel gauge needle map.",
+   "address": "0x2B8",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Fuel level sender calibration",
+   "group": "gauges",
+   "heading": "Gauges",
+   "kind": "table",
+   "bits": 16,
+   "rows": 2,
+   "cols": 8,
+   "row_labels": [
+    "Sender point",
+    "Level"
+   ],
+   "editable": true,
+   "description": "Fuel level sender linearisation (tank sender reading to level).",
+   "address": "0x288",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Coolant temperature gauge calibration",
+   "group": "gauges",
+   "heading": "Gauges",
+   "kind": "table",
+   "bits": 16,
+   "rows": 2,
+   "cols": 6,
+   "row_labels": [
+    "Temperature point",
+    "Needle position"
+   ],
+   "editable": true,
+   "description": "Coolant temperature needle map. The flat middle section is the deliberate 'needle parks at 90' band.",
+   "address": "0x30C",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Fuel consumption correction",
+   "group": "gauges",
+   "heading": "Speed & distance",
+   "kind": "value",
+   "bits": 8,
+   "equation": "(X)*0.390625+(-39.06)",
+   "units": "%",
+   "editable": true,
+   "description": "Trip computer fuel consumption trim.",
+   "address": "0x187",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Coding: distance impulse number",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "enum",
+   "options": {
+    "0x00": "Impulses via CAN (all engines/gearboxes)",
+    "0x01": "4345 impulses/km (6991/mi)",
+    "0x02": "3528 impulses/km (5677/mi)",
+    "0x03": "4134 impulses/km (6651/mi)",
+    "0x04": "3648 impulses/km (5870/mi)"
+   },
+   "options_by_chassis": {
+    "B5": {
+     "0x00": "Impulses via CAN (all engines/gearboxes)",
+     "0x01": "4345 impulses/km (6991/mi)",
+     "0x02": "3528 impulses/km (5677/mi)",
+     "0x03": "4134 impulses/km (6651/mi)",
+     "0x04": "3648 impulses/km (5870/mi)",
+     "0x05": "4182 impulses/km (6730/mi)",
+     "0x06": "4128 impulses/km (6644/mi)",
+     "0x07": "4202 impulses/km (6763/mi)"
+    },
+    "Skoda": {
+     "0x00": "Impulses via CAN (all engines/gearboxes)",
+     "0x01": "4297 impulses/km (6915/mi)",
+     "0x02": "3480 impulses/km (5601/mi)",
+     "0x03": "4078 impulses/km (6563/mi)",
+     "0x04": "3599 impulses/km (5792/mi)",
+     "0x05": "4090 impulses/km (6582/mi)"
+    }
+   },
+   "editable": true,
+   "description": "Soft-coding digit 5. Picks one of the K-values burned into the ROM; which table depends on the vehicle family (see 'Vehicle family'). 0 uses the impulses from CAN.",
+   "address": "0x183",
+   "source": "clusterconfig+xdf+doc"
+  },
+  {
+   "name": "Coding: service intervals",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "enum",
+   "options": {
+    "0x00": "Fixed intervals, no oil level/temp sensor",
+    "0x01": "Flexible intervals (LongLife), with oil level/temp sensor",
+    "0x02": "Fixed intervals, with oil level/temp sensor",
+    "0x03": "No service interval display (USA/Canada)"
+   },
+   "editable": true,
+   "description": "Soft-coding digit 4.",
+   "address": "0x184",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Coding: country",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "enum",
+   "options": {
+    "0x00": "Germany",
+    "0x01": "Europe",
+    "0x02": "USA",
+    "0x03": "Canada / Mexico / Latin America",
+    "0x04": "England",
+    "0x05": "Japan",
+    "0x06": "Saudi Arabia",
+    "0x07": "Australia"
+   },
+   "editable": true,
+   "description": "Soft-coding digit 3: country / units variant.",
+   "address": "0x185",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Coding: brake pad wear warning",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "flag",
+   "mask": "0x01",
+   "editable": true,
+   "description": "Soft-coding digits 1-2, bit 0x01.",
+   "address": "0x186",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Coding: seatbelt warning",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "flag",
+   "mask": "0x02",
+   "editable": true,
+   "description": "Soft-coding digits 1-2, bit 0x02.",
+   "address": "0x186",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Coding: washer fluid level warning",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "flag",
+   "mask": "0x04",
+   "editable": true,
+   "description": "Soft-coding digits 1-2, bit 0x04.",
+   "address": "0x186",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Coding: secondary display (radio/navigation)",
+   "group": "coding",
+   "heading": "Coding (soft coding digits)",
+   "kind": "flag",
+   "mask": "0x10",
+   "editable": true,
+   "description": "Soft-coding digits 1-2, bit 0x10.",
+   "address": "0x186",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Vehicle family",
+   "group": "coding",
+   "heading": "Vehicle configuration",
+   "kind": "enum",
+   "mask": "0x0F",
+   "options": {
+    "0x00": "Golf / Jetta / Bora (A4)",
+    "0x01": "Passat (B5)",
+    "0x05": "Skoda",
+    "0x0A": "Passat (B5)",
+    "0x0B": "Skoda"
+   },
+   "editable": true,
+   "description": "Low nibble of the vehicle-family byte. Selects which K-value table coding digit 5 uses and the default gearbox pulses per wheel revolution (7 for Golf/Jetta, 8 for the rest). Changing it re-skins the cluster for another chassis -- normally only done when building a cluster for a different car.",
+   "address": "0x223",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "ABS / lamp-check configuration",
+   "group": "coding",
+   "heading": "Vehicle configuration",
+   "kind": "hex",
+   "bits": 8,
+   "editable": true,
+   "options": {
+    "0x63": "Golf / Jetta / Bora (A4) typical",
+    "0xF7": "Passat (B5) typical",
+    "0xF6": "Skoda typical"
+   },
+   "description": "Byte that drives ABS lamp and bulb-check behaviour; varies by chassis and trim. The listed values are the typical ones per chassis, not the only valid ones -- individual bit meanings are not confirmed.",
+   "address": "0x216",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Speed / coolant temperature signal source",
+   "group": "coding",
+   "heading": "Vehicle configuration",
+   "kind": "enum",
+   "mask": "0x03",
+   "options": {
+    "0x00": "Speed and coolant temp from sensors",
+    "0x01": "Speed from CAN, coolant temp from sensor",
+    "0x02": "Speed from sensor, coolant temp from CAN",
+    "0x03": "Speed and coolant temp from CAN"
+   },
+   "editable": true,
+   "description": "Where the cluster takes road speed and coolant temperature from: the hard-wired senders or the CAN bus (ABS / engine ECU). Needed for some engine swaps.",
+   "address": "0x65",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Outside air temperature sensor",
+   "group": "coding",
+   "heading": "Options",
+   "kind": "flag",
+   "mask": "0x08",
+   "editable": true,
+   "description": "Outside air temperature display enabled.",
+   "address": "0x217",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Chime above 120 km/h",
+   "group": "coding",
+   "heading": "Options",
+   "kind": "flag",
+   "mask": "0x10",
+   "editable": true,
+   "description": "Warning chime when exceeding 120 km/h.",
+   "address": "0x217",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "LED configuration (lights off)",
+   "group": "coding",
+   "heading": "Lighting",
+   "kind": "enum",
+   "mask": "0x0F",
+   "options": {
+    "0x00": "With light switch only",
+    "0x03": "Displays only",
+    "0x05": "Gauges only",
+    "0x07": "Displays and gauges",
+    "0x09": "Needles only",
+    "0x0B": "Displays and needles",
+    "0x0D": "Needles and gauges",
+    "0x0F": "Everything lit"
+   },
+   "editable": true,
+   "description": "What stays lit with the light switch off.",
+   "address": "0x21F",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "LED on while starting",
+   "group": "coding",
+   "heading": "Lighting",
+   "kind": "flag",
+   "mask": "0x80",
+   "editable": true,
+   "description": "Illumination on during the start / sweep.",
+   "address": "0x21F",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Cruise control lamp when set",
+   "group": "coding",
+   "heading": "Lighting",
+   "kind": "flag",
+   "mask": "0x10",
+   "editable": true,
+   "description": "Light the cruise lamp while a speed is set.",
+   "address": "0x220",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Ice warning disable temperature",
+   "group": "coding",
+   "heading": "Ice warning",
+   "kind": "value",
+   "bits": 8,
+   "equation": "(X)/10",
+   "units": "degC",
+   "editable": true,
+   "not_on_lowline": true,
+   "description": "Outside temperature above which the ice warning clears.",
+   "address": "0x238",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Ice warning enable temperature",
+   "group": "coding",
+   "heading": "Ice warning",
+   "kind": "value",
+   "bits": 8,
+   "equation": "(X)/10",
+   "units": "degC",
+   "editable": true,
+   "not_on_lowline": true,
+   "description": "Outside temperature below which the ice warning shows.",
+   "address": "0x239",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Ice warning",
+   "group": "coding",
+   "heading": "Ice warning",
+   "kind": "enum",
+   "options": {
+    "0x81": "Enabled (stock)",
+    "0x11": "Disabled"
+   },
+   "editable": true,
+   "not_on_lowline": true,
+   "description": "Whole-byte switch for the ice warning (VWK503 family; not mapped on VWK501).",
+   "address": "0x222",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Outside temperature source",
+   "group": "coding",
+   "heading": "Options",
+   "kind": "enum",
+   "options": {
+    "0x01": "Analog sensor",
+    "0x08": "CAN"
+   },
+   "editable": true,
+   "not_on_lowline": true,
+   "description": "Where the outside temperature comes from (VWK503 family XDF; not mapped on VWK501).",
+   "address": "0x221",
+   "source": "xdf"
+  },
+  {
+   "name": "Distance to empty",
+   "group": "coding",
+   "heading": "Options",
+   "kind": "enum",
+   "options": {
+    "0xC1": "Off (stock)",
+    "0xE1": "On"
+   },
+   "editable": true,
+   "not_on_lowline": true,
+   "description": "Shows the range-to-empty in the trip computer. Whole-byte switch: C1 stock, E1 enabled.",
+   "address": "0x44E",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Welcome message",
+   "group": "coding",
+   "heading": "Options",
+   "kind": "enum",
+   "options": {
+    "0x6B": "Off (stock)",
+    "0x02": "On"
+   },
+   "editable": true,
+   "not_on_lowline": true,
+   "description": "Whole-byte switch from the XDF: 6B stock, 02 enabled.",
+   "address": "0x44F",
+   "source": "xdf"
+  },
+  {
+   "name": "VIN",
+   "group": "identity",
+   "heading": "Vehicle identity",
+   "kind": "text",
+   "length": 17,
+   "editable": false,
+   "role": "vin",
+   "description": "Vehicle identification number (first VIN slot).",
+   "address": "0x110",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "VIN (second slot)",
+   "group": "identity",
+   "heading": "Vehicle identity",
+   "kind": "text",
+   "length": 17,
+   "editable": false,
+   "role": "vin2",
+   "description": "Second VIN slot ('VIN2' in the EEPROM map). In every real dump checked (31, including untouched factory reads) it holds XXXXXXXXXXXXXXXXX while the first slot holds the car's VIN, so it is kept as its own field rather than treated as a copy.",
+   "address": "0x122",
+   "source": "doc"
+  },
+  {
+   "name": "Part number / ident",
+   "group": "coding",
+   "heading": "Cluster identity",
+   "kind": "text",
+   "length": 18,
+   "editable": true,
+   "role": "part_number",
+   "description": "18-character ident string, e.g. '1J0920806M  A4V07'. Scan tools read the cluster's identity from here. It describes the cluster hardware (gauge face, trim), so a vehicle-data transfer leaves it alone.",
+   "address": "0x15A",
+   "source": "clusterconfig"
+  },
+  {
+   "name": "Cluster ID for radio",
+   "group": "identity",
+   "heading": "Vehicle identity",
+   "kind": "hex",
+   "length": 2,
+   "editable": false,
+   "role": "cluster_id_radio",
+   "description": "Value the radio checks over KW1281 to know it is still in the same car. Copy it when replacing a cluster so the radio does not ask for its code.",
+   "address": "0x3CC",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "Immobilizer ID",
+   "group": "identity",
+   "heading": "Immobilizer",
+   "kind": "text",
+   "length": 14,
+   "rows": 3,
+   "row_labels": [
+    "Copy 1",
+    "Copy 2",
+    "Copy 3"
+   ],
+   "editable": false,
+   "role": "immo_id",
+   "description": "14-character immobilizer ID, stored three times.",
+   "address": "0xE0",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "Immobilizer key",
+   "group": "identity",
+   "heading": "Immobilizer",
+   "kind": "hex",
+   "length": 7,
+   "copies": 2,
+   "copy_stride": 8,
+   "editable": false,
+   "role": "immo_key",
+   "description": "Engine-ECU binding key: 7 bytes, stored three times at an 8-byte stride (the 8th byte of each slot is FF padding on genuine dumps and is left alone). A write goes to every copy.",
+   "address": "0xB0",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "Key IDs",
+   "group": "identity",
+   "heading": "Immobilizer",
+   "kind": "hex",
+   "length": 16,
+   "rows": 4,
+   "row_labels": [
+    "Key data 1",
+    "Key data 2",
+    "Key data 3",
+    "Key data 4"
+   ],
+   "editable": false,
+   "role": "key_ids",
+   "description": "Learned transponder key data (64 bytes).",
+   "address": "0x70",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "Number of keys",
+   "group": "identity",
+   "heading": "Immobilizer",
+   "kind": "table",
+   "bits": 8,
+   "rows": 1,
+   "cols": 3,
+   "equation": "(X)/17",
+   "col_labels": [
+    "Copy 1",
+    "Copy 2",
+    "Copy 3"
+   ],
+   "editable": false,
+   "role": "key_count",
+   "description": "Keys programmed (stored as count x 17), three copies.",
+   "address": "0xC8",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Immobilizer adaptation status",
+   "group": "identity",
+   "heading": "Immobilizer",
+   "kind": "enum",
+   "cols": 3,
+   "col_labels": [
+    "Copy 1",
+    "Copy 2",
+    "Copy 3"
+   ],
+   "options": {
+    "0x04": "Not adapted",
+    "0x06": "Adapted"
+   },
+   "editable": false,
+   "role": "immo_status",
+   "description": "04 not adapted, 06 adapted; three copies.",
+   "address": "0xCB",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "SKC (login code)",
+   "group": "identity",
+   "heading": "Immobilizer",
+   "kind": "value",
+   "bits": 16,
+   "copies": 2,
+   "copy_stride": 2,
+   "editable": true,
+   "role": "skc",
+   "description": "Secret key code (PIN) used for login and key adaptation. Stored three times; an edit writes all three.",
+   "address": "0x10A",
+   "source": "clusterconfig+xdf"
+  },
+  {
+   "name": "Odometer",
+   "group": "identity",
+   "heading": "Odometer",
+   "kind": "table",
+   "bits": 16,
+   "rows": 1,
+   "cols": 8,
+   "equation": "(65535-(X))*2",
+   "units": "km",
+   "col_labels": [
+    "Counter 1",
+    "Counter 2",
+    "Counter 3",
+    "Counter 4",
+    "Counter 5",
+    "Counter 6",
+    "Counter 7",
+    "Counter 8"
+   ],
+   "editable": false,
+   "role": "odometer",
+   "description": "Eight rotating 16-bit counters, each decremented once per 2 km in turn. The odometer reading is the SUM of the eight cells as shown (km). Read-only in the editor: it only moves when a whole cluster's vehicle data is transferred.",
+   "address": "0x13A",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "Odometer checksum",
+   "group": "identity",
+   "heading": "Odometer",
+   "kind": "hex",
+   "length": 7,
+   "editable": false,
+   "role": "odometer_check",
+   "description": "7 bytes stored in front of the odometer counters. The algorithm is not known: transfer it together with the odometer, never on its own.",
+   "address": "0x133",
+   "source": "clusterconfig+doc"
+  },
+  {
+   "name": "Hardware level tag",
+   "group": "coding",
+   "heading": "Cluster identity",
+   "kind": "text",
+   "length": 2,
+   "editable": false,
+   "role": "hw_level",
+   "description": "Two characters near the end of the EEPROM: HL, ML or LL on every sample that has them (high / mid / lowline). Informational.",
+   "address": "0x7F0",
+   "source": "observed"
+  }
+ ],
+ "sources": [
+  "KWHack KWHack.Core/Clusters/VWK503.clusterconfig",
+  "KWHack Reference/VWK503.xdf",
+  "KWHack Reference/EEPROM.md, Checksums.md, Odometer.md, PatchModule.md, Distance_Impulse_Number.md, RomVersion.md"
+ ]
+}
