@@ -27,8 +27,8 @@ the options, the immobiliser data, the VIN and the odometer — sits in its
   safe to edit, the checksums, and the `.vdo` file.
 - [Reading and writing the cluster](read-write.md) — over K-line: reading,
   and writing the whole EEPROM with a read-back check.
-- [Needle and LED sweep patches](needle-sweep.md) — **Tools > VDO Cluster >
-  Needle sweep...**, and who made each patch.
+- [Needle and LED sweep patches](needle-sweep.md) — **Tools > Needle
+  sweep...**, and who made each patch.
 - [Speed and distance](speed.md) — K-value from tyre size or a measured
   error, and needle-only correction.
 
@@ -91,7 +91,7 @@ immobiliser ID, SKC, the odometer, and whether the checksums are valid.
    the cluster held.
 2. Change what you need: coding options in the tree, the K-value or needle
    map with **Tools > VSS pulse settings...**, a sweep patch with **Tools >
-   VDO Cluster > Needle sweep...**.
+   Needle sweep...**.
 3. Save (Ctrl+S). The gauge checksum (and a patch block's header checksum)
    are corrected as the version is saved.
 4. Write it back with **Write flash** in the same dialog. The whole EEPROM

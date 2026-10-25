@@ -18,6 +18,7 @@ MODULE = _api.ModuleSpec(
     capabilities=(_api.CHECKSUM, _api.DEFINITIONS, _api.TOOLS),
     build=".session_vdo:build",
     checksum=".module:checksum",
+    menu_tools=".module:menu_tools",
     data=("vdo_*", "cluster_sweep_*"),
     # the checksum slots are per ROM family, read from its definition file
     checksum_data=("vdo_*.json",),
@@ -35,6 +36,15 @@ def checksum(session=None):
     if defn is None:
         return _VdoByImage()
     return _Wrap(VdoChecksum(defn))
+
+
+def menu_tools():
+    """Tools > Needle sweep... -- for a cluster tab."""
+    return [_api.MenuTool(
+        "Needle sweep...", lambda win: win.current.open_sweep(),
+        _api.TOOLS_SETTINGS, icon="needle-sweep",
+        tooltip="Apply a needle / LED sweep or DSG-needle patch to a VDO "
+                "cluster EEPROM (only patches for its exact ROM build)")]
 
 
 class _Wrap(_api.ChecksumProvider):

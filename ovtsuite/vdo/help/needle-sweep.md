@@ -5,7 +5,8 @@ context: SweepDialog
 ---
 # Needle and LED sweep patches
 
-**Tools > VDO Cluster > Needle sweep...** puts a *sweep patch* into the open cluster
+**Tools > Needle sweep...** (shown while a cluster tab is in front) puts a
+*sweep patch* into the open cluster
 EEPROM: the needles (and on some patches the LEDs) sweep to full scale and
 back when the ignition is switched on. There are also DSG-needle patches.
 
@@ -28,7 +29,7 @@ dialog.
 1. Open the cluster's project — ideally one made from a read of the cluster
    with this app, so its ROM build is known for certain (see
    [Reading and writing the cluster](read-write.md)).
-2. **Tools > VDO Cluster > Needle sweep...**
+2. **Tools > Needle sweep...**
 3. Check **This cluster**: **ROM build** shows the build and where it came
    from; **Patch block now** describes the patch block the EEPROM carries.
 4. Pick a patch in the list. The panel below shows its author, copyright,
