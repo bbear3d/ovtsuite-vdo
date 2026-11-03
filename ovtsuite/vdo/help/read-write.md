@@ -63,10 +63,14 @@ saved as an `.ovt` project by default, or as the raw image (`.bin`).
      write stops before the cluster is touched;
    - connects and unlocks as for a read;
    - writes **the whole EEPROM**, all 128 blocks of 16 bytes;
-   - reads every block back and compares it.
+   - reads every block back and compares it;
+   - once every block reads back correctly, sends the cluster a **reset** so
+     it restarts on the new EEPROM (never after a failed or unverified write).
 5. The result says the whole EEPROM was written and verified, and the
-   version written is marked in the project as last flashed. Switch the
-   ignition off and on: the cluster reloads the EEPROM at power-up.
+   version written is marked in the project as last flashed. The cluster
+   restarts by itself. If the result says the reset request could not be
+   sent, switch the ignition off and on: the cluster reloads the EEPROM at
+   power-up.
 
 The checksums are corrected in the image that is sent, so you do not have to
 save first — but do save, so the project's history holds what the cluster

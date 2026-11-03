@@ -97,7 +97,8 @@ immobiliser ID, SKC, the odometer, and whether the checksums are valid.
 4. Write it back with **Write flash** in the same dialog. The whole EEPROM
    is written — everything in it, vehicle data included, replaces what
    the cluster holds — and each block is read back to check it.
-5. Switch the ignition off and on so the cluster reloads its EEPROM.
+5. The cluster is reset and restarts on its new EEPROM (if the result says the
+   reset could not be sent, switch the ignition off and on instead).
 
 ## Asking the AI
 

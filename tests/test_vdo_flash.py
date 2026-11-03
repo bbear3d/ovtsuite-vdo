@@ -82,6 +82,46 @@ def test_write_is_the_whole_eeprom_without_reading_first():
     assert "whole EEPROM" in rep.describe()
 
 
+def test_a_good_write_ends_with_a_reset_of_the_cluster():
+    img = synthetic("VWK501", "VWK501MH 01.10")
+    new = _edited(img, 0x150, (3700).to_bytes(2, "little"))
+    sim = SimClusterLink(img, "VWK501MH 01.10")
+    rep = vc.write_cluster(sim, new)
+    assert sim.resets == 1 and rep.reset is True
+    assert "sent a reset" in rep.describe()
+    # the reset is the last thing said to it: no End Communication after it
+    assert not sim.ended
+
+
+def test_a_reset_the_cluster_never_answers_is_still_a_good_write():
+    """A cluster that reboots at once may be silent: the write stays a success."""
+    img = synthetic("VWK501", "VWK501MH 01.10")
+    new = _edited(img, 0x150, (3700).to_bytes(2, "little"))
+    sim = SimClusterLink(img, "VWK501MH 01.10")
+    orig = sim._handle
+
+    def silent(title, body):
+        if title == vc.BT_CUSTOM and body and body[0] == vc.CMD_RESET:
+            sim.resets += 1
+            raise vc.KLineTimeout("no answer")
+        return orig(title, body)
+    sim._handle = silent
+    rep = vc.write_cluster(sim, new)
+    assert rep.verified and sim.resets == 1
+
+
+def test_a_failed_write_or_a_read_is_never_followed_by_a_reset():
+    img = synthetic("VWK501")
+    new = _edited(img, 0x150, (3700).to_bytes(2, "little"))
+    sim = SimClusterLink(img, corrupt_write_at={0x140})
+    with pytest.raises(vc.ClusterError, match="verify"):
+        vc.write_cluster(sim, new)
+    assert sim.resets == 0 and sim.ended
+    sim = SimClusterLink(img)
+    vc.read_cluster(sim)
+    assert sim.resets == 0
+
+
 def test_another_cars_data_is_written_as_is():
     """No identity comparison any more: the file replaces what the cluster holds."""
     img = synthetic("VWK501")
